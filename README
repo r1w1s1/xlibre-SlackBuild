@@ -1,0 +1,42 @@
+XLIBRE-SLACKBUILD
+
+xlibre-SlackBuild tracks the Slackware-current xlibre package and is
+used for testing development and pre-release XLibre snapshots.
+
+The repository is based on the xlibre sources available in the
+Slackware testing tree.
+
+
+SOURCE
+
+    https://mirrors.kernel.org/slackware/slackware64-current/testing/source/xlibre/
+
+
+USAGE
+
+Build and install XLibre:
+
+    ./xlibre.SlackBuild
+    upgradepkg --install-new /tmp/xlibre-*.txz
+
+Build and install the X drivers:
+
+    cd x11
+    ./x11.SlackBuild driver
+
+The driver build script installs the generated packages
+automatically.
+
+
+NOTES
+
+This repository exists to track local changes and test newer XLibre
+snapshots before they are added to the Slackware testing tree.
+
+The XLibre server package alone is not sufficient. Matching X drivers
+should also be built and installed using the x11 driver build script.
+
+
+LICENSE
+
+Files retain their original licenses.

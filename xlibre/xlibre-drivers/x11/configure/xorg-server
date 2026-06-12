@@ -1,0 +1,64 @@
+# Build Wayland X Server (currently built as standalone):
+BUILD_XWAYLAND=NO
+
+# We will build Xorg so that it runs rootless if it can do so. The Xorg.wrap
+# setuid wrapper will be set to "auto" by default in /etc/X11/Xwrapper.config,
+# which will only run Xorg as root for non-KMS legacy drivers that require Xorg
+# to be running as root in order to draw to the screen. It's possible that some
+# drivers could still run into issues with this, such as missing keyboard or
+# mouse (elogind should provide these), or problems after suspend. If you do
+# have problems, let us know on LQ. You can also edit /etc/X11/Xwrapper.config
+# to make Xorg run as root:
+# needs_root_rights = yes
+ROOTLESS_OPTIONS="--enable-suid-wrapper --disable-install-setuid --enable-systemd-logind"
+
+# Servers to build:
+if [ "$BUILD_XWAYLAND" = "NO" ]; then
+  XWAYLAND_OPTION="--disable-xwayland"
+else
+  XWAYLAND_OPTION="--enable-xwayland"
+fi
+BUILD_SERVERS="--enable-xorg \
+  --enable-dmx \
+  --enable-xvfb \
+  --enable-xnest \
+  --enable-glamor \
+  --enable-kdrive \
+  --enable-xephyr \
+  $XWAYLAND_OPTION "
+
+# Default font paths to be used by the X server:
+DEF_FONTPATH="/usr/share/fonts/misc,/usr/share/fonts/local,/usr/share/fonts/TTF,/usr/share/fonts/OTF,/usr/share/fonts/Type1,/usr/share/fonts/CID,/usr/share/fonts/75dpi/:unscaled,/usr/share/fonts/100dpi/:unscaled,/usr/share/fonts/75dpi,/usr/share/fonts/100dpi,/usr/share/fonts/cyrillic"
+
+# Reconf (don't remove this plz):
+autoreconf -vif
+
+CFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --infodir=/usr/info \
+  --mandir=/usr/man \
+  --disable-static \
+  --with-pic \
+  --with-int10=x86emu \
+  --with-default-font-path="${DEF_FONTPATH}" \
+  --with-module-dir=/usr/lib${LIBDIRSUFFIX}/xorg/modules \
+  --with-os-name="Slackware 15.1" \
+  --with-os-vendor="Slackware Linux Project" \
+  --with-xkb-path=/usr/share/X11/xkb \
+  --with-xkb-output=/var/lib/xkb \
+  --enable-config-udev \
+  --disable-config-hal \
+  --enable-year2038 \
+  $BUILD_SERVERS \
+  $ROOTLESS_OPTIONS \
+  --build=$ARCH-slackware-linux
+
+if [ "$ARCH" = "x86_64" ]; then
+  # To prevent the error "No rule to make target `-ldl'"
+  sed -i -e 's#-ldl##' hw/xfree86/Makefile
+  sed -i -e 's#-lm#-lm -ldl#' hw/xfree86/Makefile
+fi

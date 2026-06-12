@@ -1,0 +1,242 @@
+#!/bin/bash
+
+# Copyright 2026  Patrick J. Volkerding, Sebeka, Minnesota, USA
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+cd $(dirname $0) ; CWD=$(pwd)
+
+PKGNAM=xlibre-server
+VERSION=${VERSION:-$(echo $PKGNAM-*.tar.?z | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
+BUILD=${BUILD:-1}
+
+# Automatically determine the architecture we're building on:
+if [ -z "$ARCH" ]; then
+  case "$(uname -m)" in
+    i?86) ARCH=i686 ;;
+    arm*) readelf /usr/bin/file -A | egrep -q "Tag_CPU.*[4,5]" && ARCH=arm || ARCH=armv7hl ;;
+    # Unless $ARCH is already set, use uname -m for all other archs:
+    *) ARCH=$(uname -m) ;;
+  esac
+  export ARCH
+fi
+
+# If the variable PRINT_PACKAGE_NAME is set, then this script will report what
+# the name of the created package would be, and then exit. This information
+# could be useful to other scripts.
+if [ ! -z "${PRINT_PACKAGE_NAME}" ]; then
+  echo "$PKGNAM-$VERSION-$ARCH-$BUILD.txz"
+  exit 0
+fi
+
+NUMJOBS=${NUMJOBS:-" -j $(expr $(nproc) + 1) "}
+
+if [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=pentium4 -mtune=generic"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -march=x86-64 -mtune=generic -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+# Fail on undeclared variables and broken pipes:
+set -u -o pipefail
+
+TMP=${TMP:-/tmp}
+PKG=$TMP/package-$PKGNAM
+
+rm -rf $PKG
+mkdir -p $TMP $PKG
+
+cd $TMP
+rm -rf $PKGNAM-$VERSION
+tar xvf $CWD/$PKGNAM-$VERSION.tar.?z || exit 1
+cd $PKGNAM-$VERSION || exit 1
+
+chown -R root:root .
+find . \
+  \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+  -exec chmod 755 {} \+ -o \
+  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+  -exec chmod 644 {} \+
+
+# Configure, build, and install:
+export CFLAGS="$SLKCFLAGS"
+export CXXFLAGS="$SLKCFLAGS"
+mkdir meson-build
+cd meson-build
+meson setup \
+  --prefix=/usr \
+  --libdir=lib${LIBDIRSUFFIX} \
+  --libexecdir=/usr/libexec \
+  --bindir=/usr/bin \
+  --sbindir=/usr/sbin \
+  --includedir=/usr/include \
+  --datadir=/usr/share \
+  --mandir=/usr/man \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --buildtype=release \
+  -Ddpms=true \
+  -Dipv6=true \
+  -Dxvfb=true \
+  -Dxnest=true \
+  -Dxcsecurity=true \
+  -Dxorg=true \
+  -Dxephyr=true \
+  -Dglamor=true \
+  -Dudev=true \
+  -Ddtrace=false \
+  -Dseatd_libseat=true \
+  -Dsuid_wrapper=true \
+  -Dxkb_dir='/usr/share/X11/xkb' \
+  -Dxkb_output_dir='/var/lib/xkb' \
+  -Dlibunwind=true \
+  .. || exit 1
+  "${NINJA:=ninja}" $NUMJOBS || exit 1
+  DESTDIR=$PKG $NINJA install || exit 1
+cd ..
+
+# Tighten the perms on /usr/libexec/Xorg.wrap:
+chmod 4511 $PKG//usr/libexec/Xorg.wrap
+
+# Add a config file for Xorg.wrap:
+cp -a $CWD/Xwrapper.config $PKG/etc/X11/Xwrapper.config.new
+chown root:root $PKG/etc/X11/Xwrapper.config.new
+chmod 644 $PKG/etc/X11/Xwrapper.config.new
+
+# Create a sample keyboard layout
+# Enable zapping by default
+cat << EOF > $PKG/usr/share/X11/xorg.conf.d/90-keyboard-layout-evdev.conf
+Section "InputClass"
+        Identifier "keyboard-all"
+        MatchIsKeyboard "on"
+        MatchDevicePath "/dev/input/event*"
+        Driver "evdev"
+        Option "XkbLayout" "us"
+        #Option "XkbVariant" ""
+        Option "XkbOptions" "terminate:ctrl_alt_bksp"
+EndSection
+
+# READ THIS FOR CUSTOM KEYBOARD INFORMATION
+#
+#  If you want to add a custom model/layout/variant to X, you will need to COPY
+#  this file to /etc/X11/xorg.conf.d/ and edit that copy.  After editing it to
+#  suit, you will need to restart X.
+#
+#  Here's an example of the lines from above:
+#
+# Section "InputClass"
+#       Identifier "keyboard-all"
+#       MatchIsKeyboard "on"
+#       MatchDevicePath "/dev/input/event*"
+#       Driver "evdev"
+#       Option "XkbLayout" "us"
+#       Option "XkbVariant" "intl"
+#       Option "XkbOptions" "compose:rwin,terminate:ctrl_alt_bksp"
+# EndSection
+#
+#  Many desktop environments, including KDE and Xfce, have their own methods to
+#  configure keyboard layouts and such if you'd like to use them.
+#
+#  If you prefer to use the "old" way of configuring keyboards (without input
+#  device hotplugging), then you'll need to add the following lines to the
+#  ServerFlags section of /etc/X11/xorg.conf:
+#    Option   "AllowEmptyInput"     "false"
+#    Option   "AutoAddDevices"      "false"
+#    Option   "AutoEnableDevices"   "false"
+#  Alternatively, you can break this up into separate "stubs" in the xorg.conf.d/
+#  directory, but that's your call.  Assuming you elect to keep a monolithic
+#  /etc/X11/xorg.conf file, you can now edit the Keyboard section as usual.
+
+EOF
+
+# While I hate to have X11 take over another generic-sounding
+# piece of prime filesystem real estate, this symlink will
+# direct (for now) proprietary X drivers into the correct
+# location:
+( cd $PKG/usr/lib${LIBDIRSUFFIX}
+  rm -rf modules
+  ln -sf xorg/modules .
+)
+
+# Strip binaries:
+find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null
+
+# Compress manual pages:
+find $PKG/usr/man -type f -exec gzip -9 {} \+
+for i in $( find $PKG/usr/man -type l ) ; do
+  ln -s $( readlink $i ).gz $i.gz
+  rm $i
+done
+
+# Add a documentation directory:
+mkdir -p $PKG/usr/doc/${PKGNAM}-$VERSION
+cp -a \
+  CODE_OF_CONDUCT* CODE_OVERVIEW* CONTRIBUTING* COPYING* CoC* HISTORY* NEWS* README* \
+  $PKG/usr/doc/${PKGNAM}-$VERSION
+mv $PKG/usr/share/doc/xorg-server/* $PKG/usr/doc/${PKGNAM}-$VERSION
+rmdir $PKG/usr/share/doc/xorg-server $PKG/usr/share/doc
+
+mkdir -p $PKG/install
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+cat $CWD/slack-desc > $PKG/install/slack-desc
+
+# Build the xlibre-server-xnest package:
+rm -rf $TMP/package-xlibre-server-xnest
+mkdir -p $TMP/package-xlibre-server-xnest/usr/bin
+mv $PKG/usr/bin/Xnest $TMP/package-xlibre-server-xnest/usr/bin
+mkdir -p $TMP/package-xlibre-server-xnest/usr/man/man1
+mv $PKG/usr/man/man1/Xnest.1.gz $TMP/package-xlibre-server-xnest/usr/man/man1
+mkdir -p $TMP/package-xlibre-server-xnest/install
+cat $CWD/slack-desc.xlibre-server-xnest > $TMP/package-xlibre-server-xnest/install/slack-desc
+( cd $TMP/package-xlibre-server-xnest
+  /sbin/makepkg -l y -c n $TMP/xlibre-server-xnest-${VERSION}-$ARCH-$BUILD.txz
+)
+
+# Build the xlibre-server-xvfb package:
+rm -rf $TMP/package-xlibre-server-xvfb
+mkdir -p $TMP/package-xlibre-server-xvfb/usr/bin
+mv $PKG/usr/bin/Xvfb $TMP/package-xlibre-server-xvfb/usr/bin
+mkdir -p $TMP/package-xlibre-server-xvfb/usr/man/man1
+mv $PKG/usr/man/man1/Xvfb.1.gz $TMP/package-xlibre-server-xvfb/usr/man/man1
+mkdir -p $TMP/package-xlibre-server-xvfb/install
+cat $CWD/slack-desc.xlibre-server-xvfb > $TMP/package-xlibre-server-xvfb/install/slack-desc
+( cd $TMP/package-xlibre-server-xvfb
+  /sbin/makepkg -l y -c n $TMP/xlibre-server-xvfb-${VERSION}-$ARCH-$BUILD.txz
+)
+
+# Build the xlibre-server-xephyr package:
+rm -rf $TMP/package-xlibre-server-xephyr
+mkdir -p $TMP/package-xlibre-server-xephyr/usr/bin
+mv $PKG/usr/bin/Xephyr $TMP/package-xlibre-server-xephyr/usr/bin
+mkdir -p $TMP/package-xlibre-server-xephyr/usr/man/man1
+mv $PKG/usr/man/man1/Xephyr.1.gz $TMP/package-xlibre-server-xephyr/usr/man/man1
+mkdir -p $TMP/package-xlibre-server-xephyr/install
+cat $CWD/slack-desc.xlibre-server-xephyr > $TMP/package-xlibre-server-xephyr/install/slack-desc
+( cd $TMP/package-xlibre-server-xephyr
+  /sbin/makepkg -l y -c n $TMP/xlibre-server-xephyr-${VERSION}-$ARCH-$BUILD.txz
+)
+
+# Build the main xlibre-server package:
+cd $PKG
+/sbin/makepkg -l y -c n $TMP/$PKGNAM-$VERSION-$ARCH-$BUILD.txz

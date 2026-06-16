@@ -106,11 +106,13 @@ meson setup \
   -Dglamor=true \
   -Dudev=true \
   -Ddtrace=false \
-  -Dseatd_libseat=true \
+  -Dseatd_libseat=false \
+  -Dsystemd_logind=true \
   -Dsuid_wrapper=true \
   -Dxkb_dir='/usr/share/X11/xkb' \
   -Dxkb_output_dir='/var/lib/xkb' \
   -Dlibunwind=true \
+  -Dlegacy_nvidia_padding=true \
   .. || exit 1
   "${NINJA:=ninja}" $NUMJOBS || exit 1
   DESTDIR=$PKG $NINJA install || exit 1

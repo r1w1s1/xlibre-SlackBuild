@@ -38,9 +38,7 @@ xf86-video-tga
 xf86-video-tseng
 xf86-video-v4l
 xf86-video-vboxvideo
-# Xlibre has been working on this driver, so let's include it again
-# and see if it works:
-#xf86-video-vmware
+xf86-video-vmware
 xf86-video-voodoo
 xf86-video-xgi
 xf86-video-xgixp

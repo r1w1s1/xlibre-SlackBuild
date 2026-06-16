@@ -20,6 +20,26 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-for driver in xf86-input-evdev xf86-input-libinput xf86-input-synaptics xf86-input-vmmouse xf86-input-wacom xf86-video-amdgpu xf86-video-ati xf86-video-dummy xf86-video-intel xf86-video-mach64 xf86-video-mga xf86-video-neomagic xf86-video-nouveau xf86-video-openchrome xf86-video-r128 xf86-video-s3virge xf86-video-savage xf86-video-trident xf86-video-vesa xf86-video-vmware ; do
+for driver in \
+  xf86-input-evdev \
+  xf86-input-libinput \
+  xf86-input-synaptics \
+  xf86-input-vmmouse \
+  xf86-input-wacom \
+  xf86-video-amdgpu \
+  xf86-video-ati \
+  xf86-video-dummy \
+  xf86-video-intel \
+  xf86-video-mach64 \
+  xf86-video-mga \
+  xf86-video-neomagic \
+  xf86-video-nouveau \
+  xf86-video-openchrome \
+  xf86-video-r128 \
+  xf86-video-s3virge \
+  xf86-video-savage \
+  xf86-video-trident \
+  xf86-video-vesa \
+  ; do
   PKGNAM=$driver ./fetch-xf86-driver.sh
 done

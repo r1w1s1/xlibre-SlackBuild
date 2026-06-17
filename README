@@ -14,18 +14,23 @@ SOURCE
 
 USAGE
 
-Build and install XLibre:
+Build the XLibre server packages:
 
-    ./xlibre.SlackBuild
-    upgradepkg --install-new /tmp/xlibre-*.txz
+    cd xlibre/xlibre-server
+    ./xlibre-server.SlackBuild
+    upgradepkg --install-new /tmp/xlibre-server-*.txz
+
+This build also produces companion packages such as
+`xlibre-server-xnest`, `xlibre-server-xvfb`, and
+`xlibre-server-xephyr` in `/tmp`.
 
 Build and install the X drivers:
 
-    cd x11
-    ./x11.SlackBuild driver
+    cd xlibre/xlibre-drivers
+    ./xlibre-drivers.SlackBuild driver
 
-The driver build script installs the generated packages
-automatically.
+The driver wrapper runs `x11/x11.SlackBuild driver`, and the driver
+build script installs the generated packages automatically.
 
 
 NOTES
@@ -34,7 +39,7 @@ This repository exists to track local changes and test newer XLibre
 snapshots before they are added to the Slackware testing tree.
 
 The XLibre server package alone is not sufficient. Matching X drivers
-should also be built and installed using the x11 driver build script.
+should also be built and installed using the driver build script.
 
 
 LICENSE

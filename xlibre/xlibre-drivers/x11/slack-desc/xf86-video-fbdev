@@ -8,7 +8,7 @@
                 |-----handy-ruler------------------------------------------------------|
 xf86-video-fbdev: xf86-video-fbdev (generic framebuffer video driver)
 xf86-video-fbdev:
-xf86-video-fbdev: xf86-video-fbdev is the generic framebuffer video driver for Xlibre,
+xf86-video-fbdev: xf86-video-fbdev is the generic framebuffer video driver for XLibre,
 xf86-video-fbdev: designed to draw into a video framebuffer provided by the
 xf86-video-fbdev: underlying operating system.
 xf86-video-fbdev:

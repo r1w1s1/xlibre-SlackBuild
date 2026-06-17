@@ -6,7 +6,7 @@
 # customary to leave one space after the ':'.
 
                    |-----handy-ruler------------------------------------------------------|
-xf86-input-keyboard: kbd (Keyboard input driver for the Xlibre X server)
+xf86-input-keyboard: kbd (Keyboard input driver for the XLibre X server)
 xf86-input-keyboard:
 xf86-input-keyboard: This is the non-evdev keyboard driver for X. Most Linux systems
 xf86-input-keyboard: should be using the evdev driver to handle input devices such as

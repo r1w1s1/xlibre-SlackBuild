@@ -21,7 +21,7 @@
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-PKGNAM=xlibre-server
+PKGNAM=xlibre-xserver
 
 # Pull a stable branch + patches
 BRANCH=${1:-master}
@@ -37,7 +37,7 @@ git clone https://github.com/X11Libre/xserver.git
   git checkout $BRANCH || exit 1
 )
 
-mv xserver xlibre-server
+mv xserver xlibre-xserver
 
 HEADISAT="$( cd ${PKGNAM} && git log -1 --format=%h )"
 DATE="$( cd ${PKGNAM} && git log -1 --format=%cd --date=format:%Y%m%d )"

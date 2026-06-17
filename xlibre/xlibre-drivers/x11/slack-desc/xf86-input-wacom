@@ -8,7 +8,7 @@
                 |-----handy-ruler------------------------------------------------------|
 xf86-input-wacom: xf86-input-wacom (driver for Wacom tablets)
 xf86-input-wacom:
-xf86-input-wacom: This package provides the Xlibre X11 driver for Wacom and Wacom-like
+xf86-input-wacom: This package provides the XLibre X11 driver for Wacom and Wacom-like
 xf86-input-wacom: tablets.
 xf86-input-wacom:
 xf86-input-wacom: Homepage: https://github.com/linuxwacom/xf86-input-wacom

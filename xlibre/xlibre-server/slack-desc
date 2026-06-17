@@ -8,7 +8,7 @@
              |-----handy-ruler------------------------------------------------------|
 xlibre-server: xlibre-server (alternative display server for X11)
 xlibre-server:
-xlibre-server: Xlibre is a fork of the Xorg Xserver with lots of code cleanups and
+xlibre-server: XLibre is a fork of the Xorg Xserver with lots of code cleanups and
 xlibre-server: enhanced functionality. 
 xlibre-server:
 xlibre-server: Homepage: https://xlibre.net

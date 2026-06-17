@@ -6,7 +6,7 @@
 # customary to leave one space after the ':'.
 
                  |-----handy-ruler------------------------------------------------------|
-xf86-video-amdgpu: xf86-video-amdgpu (AMD GPU driver for the Xlibre X server)
+xf86-video-amdgpu: xf86-video-amdgpu (AMD GPU driver for the XLibre X server)
 xf86-video-amdgpu:
 xf86-video-amdgpu: xf86-video-amdgpu is part of X11.
 xf86-video-amdgpu:

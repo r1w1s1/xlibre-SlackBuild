@@ -20,9 +20,11 @@ Build the XLibre server packages:
     ./xlibre-server.SlackBuild
     upgradepkg --install-new /tmp/xlibre-server-*.txz
 
-This build also produces companion packages such as
-`xlibre-server-xnest`, `xlibre-server-xvfb`, and
-`xlibre-server-xephyr` in `/tmp`.
+This build also produces companion packages such as in /tmp
+
+    xlibre-server-xnest
+    xlibre-server-xvfb
+    xlibre-server-xephyr
 
 Build and install the X drivers:
 

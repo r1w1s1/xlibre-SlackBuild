@@ -81,7 +81,7 @@ find . \
   -exec chmod 644 {} \+
 
 cat $CWD/patches/0001-xfree86-use-modesetting-driver-by-default-on-GeForce.patch | patch -p1 --verbose || exit 1
-cat $CWD/patches/06_use-intel-only-on-pre-gen4.diff | patch -p1 --verbose || exit 1
+#cat $CWD/patches/06_use-intel-only-on-pre-gen4.diff | patch -p1 --verbose || exit 1
 
 # Configure, build, and install:
 export CFLAGS="$SLKCFLAGS"

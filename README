@@ -26,6 +26,17 @@ This build also produces companion packages such as in /tmp
     xlibre-server-xvfb
     xlibre-server-xephyr
 
+Build an XLibre GitHub pull request:
+
+    ./fetch-xlibre-server-pr.sh 3329
+    VERSION=YYYYMMDD_shortsha ./xlibre-server.SlackBuild
+
+Replace YYYYMMDD_shortsha with the date and short commit hash printed by the
+fetch script.  The helper fetches the exact HEAD of the pull request and
+creates an archive compatible with the existing SlackBuild.  Use a separate
+build directory, or set VERSION explicitly, when another xlibre-xserver source
+archive is present.
+
 Build and install the X drivers:
 
     cd xlibre/xlibre-drivers
